@@ -8,11 +8,15 @@ import android.view.ViewGroup
 import android.widget.GridLayout
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.photogallery.api.FlickrApi
 import com.example.photogallery.api.FlickrFetchr
+import com.example.photogallery.api.PhotoResponse
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -34,10 +38,7 @@ class PhotoGalleryFragment private constructor(): Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val flikrLiveData = FlickrFetchr().fetchContent()
-        flikrLiveData.observe(this, {
-            Log.d("aa","${it}")
-        })
+        val viewModel = ViewModelProvider(this).get(PhotoGalleryViewModel::class.java)
     }
 
     override fun onCreateView(
