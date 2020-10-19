@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.*
@@ -12,15 +12,25 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.photogallery.network.NetworkPhotoParser
+import com.example.photogallery.network.PhotoApplication
 
 class PhotoGalleryFragment : Fragment() {
     private  val viewModelPhotoGallery by   viewModels<PhotoLiveData>()
+    private lateinit var networkPhotoParser: NetworkPhotoParser
     private lateinit var photoRecycler: RecyclerView
+
     companion object{
         fun getInstance(): PhotoGalleryFragment{
             return  PhotoGalleryFragment()
         }
     }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        networkPhotoParser = NetworkPhotoParser(PhotoApplication().executorService)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -49,16 +59,22 @@ class PhotoGalleryFragment : Fragment() {
     }
     inner class PhotoRecycler(diffCallback: DiffUtil.ItemCallback<Photo>): PagingDataAdapter<Photo,PhotoRecycler.ViewHolderPhoto>(diffCallback){
         inner class ViewHolderPhoto(itemView: View): RecyclerView.ViewHolder(itemView){
-             val  textView : TextView
+             val  image : ImageView
             init{
-                textView = itemView as TextView
+                image = itemView as ImageView
             }
             fun bind(photo: Photo){
-                textView.text = photo.title
+                //Picasso.get().load(photo.url).into(image)
+          /*      networkPhotoParser.makeDownloadPhotoRequest(photo.url) {
+                    Handler(Looper.getMainLooper()).post {
+                        image.setImageBitmap(it)
+                    }
+                } */
             }
         }
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolderPhoto {
-            return ViewHolderPhoto(TextView(parent.context))
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.phot_item_list,parent,false)
+            return ViewHolderPhoto(view)
         }
         override fun onBindViewHolder(holder: ViewHolderPhoto, position: Int) {
             val photo = getItem(position)

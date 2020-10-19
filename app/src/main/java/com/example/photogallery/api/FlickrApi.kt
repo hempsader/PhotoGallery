@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import com.example.photogallery.Photo
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -14,6 +15,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
+import retrofit2.http.Url
 import java.util.function.LongFunction
 
 interface FlickrApi {
@@ -22,6 +24,9 @@ interface FlickrApi {
            "&api_key=5f54e7f20048a04d31912e960ddc3f7e"+ "&extras=url_s"+ "&per_page="+ "&page=1" +
             "&format=json" + "&nojsoncallback=1")
    suspend fun fetchPhoto(@Query ("page") page: Int = 1): PhotoResponse
+
+    @GET
+    fun fetchUrlBytes(@Url url: String): Call<ResponseBody>
 
     companion object {
         private fun factory(): Gson {

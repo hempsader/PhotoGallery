@@ -4,17 +4,24 @@ import android.app.Application
 import android.content.Context
 import androidx.lifecycle.LiveData
 import java.lang.IllegalStateException
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
-class PhotoRepository {
+class PhotoRepository private constructor(val context: Context){
+
     companion object{
-        private var INITIALISE: PhotoRepository? = null
+        private var photoRepository: PhotoRepository? = null
         fun initialise(context: Context){
-            if(INITIALISE == null){
-                INITIALISE = PhotoRepository()
+            if(photoRepository == null){
+                photoRepository = PhotoRepository(context)
             }
         }
-        fun get():PhotoRepository{
-            return INITIALISE ?: throw IllegalStateException("Already initialised")
+        fun get(): PhotoRepository? {
+            if(photoRepository != null){
+                throw IllegalStateException("Already initialised")
+            }else {
+                return photoRepository
+            }
         }
     }
 
