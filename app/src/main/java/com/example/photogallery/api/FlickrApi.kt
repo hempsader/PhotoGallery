@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import com.example.photogallery.Photo
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
@@ -19,14 +20,15 @@ import retrofit2.http.Url
 import java.util.function.LongFunction
 
 interface FlickrApi {
-
-   @GET("services/rest/?method=flickr.interestingness.getList"+
-           "&api_key=5f54e7f20048a04d31912e960ddc3f7e"+ "&extras=url_s"+ "&per_page="+ "&page=1" +
-            "&format=json" + "&nojsoncallback=1")
+    //https://www.flickr.com/services/api/explore/flickr.photos.search
+    @GET("services/rest?method=flickr.interestingness.getList")
    suspend fun fetchPhoto(@Query ("page") page: Int = 1): PhotoResponse
 
     @GET
     fun fetchUrlBytes(@Url url: String): Call<ResponseBody>
+
+    @GET("services/rest?method=flickr.photos.search")
+    fun searchPhotos(@Query("text") query: String): Call<PhotoResponse>
 
     companion object {
         private fun factory(): Gson {
@@ -35,11 +37,13 @@ interface FlickrApi {
             return gsonBuilder.create()
         }
 
-        fun getApiService() =
-            Retrofit.Builder()
+        fun getApiService(): FlickrApi {
+            val client = OkHttpClient.Builder().addInterceptor(PhotoInterceptor()).build()
+            return Retrofit.Builder()
                 .baseUrl("https://www.flickr.com/")
-                .addConverterFactory(GsonConverterFactory.create(factory())).build()
+                .addConverterFactory(GsonConverterFactory.create(factory())).client(client).build()
                 .create(FlickrApi::class.java)
+        }
 
      /*  private fun getPhotos(page: Int): MutableLiveData<List<Photo>> {
             val list: MutableLiveData<List<Photo>> = MutableLiveData()

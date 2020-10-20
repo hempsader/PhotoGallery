@@ -1,9 +1,10 @@
 package com.example.photogallery
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
+import android.view.*
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -19,7 +20,7 @@ class PhotoGalleryFragment : Fragment() {
     private  val viewModelPhotoGallery by   viewModels<PhotoLiveData>()
     private lateinit var networkPhotoParser: NetworkPhotoParser
     private lateinit var photoRecycler: RecyclerView
-
+    private var haveNetwork = false
     companion object{
         fun getInstance(): PhotoGalleryFragment{
             return  PhotoGalleryFragment()
@@ -28,7 +29,12 @@ class PhotoGalleryFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        networkPhotoParser = NetworkPhotoParser(PhotoApplication().executorService)
+        networkPhotoParser = NetworkPhotoParser(PhotoRepository.getExecutor())
+        PhotoRepository.netWorkState(requireContext()){
+            haveNetwork = it == NetworkState.Connected
+            Log.d("aa",haveNetwork.toString())
+        }
+        setHasOptionsMenu(true)
     }
 
     override fun onCreateView(
@@ -63,13 +69,15 @@ class PhotoGalleryFragment : Fragment() {
             init{
                 image = itemView as ImageView
             }
-            fun bind(photo: Photo){
+            fun bind(photo: Photo, haveNetwork: Boolean){
                 //Picasso.get().load(photo.url).into(image)
-          /*      networkPhotoParser.makeDownloadPhotoRequest(photo.url) {
-                    Handler(Looper.getMainLooper()).post {
-                        image.setImageBitmap(it)
+                if(haveNetwork) {
+                    networkPhotoParser.makeDownloadPhotoRequest(photo.url) {
+                        Handler(Looper.getMainLooper()).post {
+                            image.setImageBitmap(it)
+                        }
                     }
-                } */
+                }
             }
         }
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolderPhoto {
@@ -78,8 +86,13 @@ class PhotoGalleryFragment : Fragment() {
         }
         override fun onBindViewHolder(holder: ViewHolderPhoto, position: Int) {
             val photo = getItem(position)
-            holder.bind(photo!!)
+            holder.bind(photo!!,haveNetwork)
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        val inflater = inflater.inflate(R.menu.gallery_toolbar_items,menu)
+        return inflater
     }
 
 }
